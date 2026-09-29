@@ -73,7 +73,7 @@ def pack_case(case_dir: Path, output: Path) -> Path:
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for path in sorted(case_dir.rglob("*")):
-            if path.is_file():
+            if path.is_file() and path.resolve() != output:
                 zf.write(path, path.relative_to(case_dir))
     return output
 

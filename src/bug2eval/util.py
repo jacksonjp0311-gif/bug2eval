@@ -54,7 +54,31 @@ def read_json(path: Path) -> dict:
 def parse_command(command: str) -> list[str]:
     if not command or not command.strip():
         raise ValueError("command cannot be empty")
-    argv = shlex.split(command, posix=(os.name != "nt"))
+    if os.name == "nt":
+        # shlex(posix=False) retains quotes and is not a Windows argv parser.
+        # Use the native parser with a dummy program name so all user tokens
+        # receive ordinary argument quoting/backslash rules.
+        import ctypes
+        from ctypes import wintypes
+
+        shell32 = ctypes.WinDLL("shell32", use_last_error=True)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        split = shell32.CommandLineToArgvW
+        split.argtypes = [wintypes.LPCWSTR, ctypes.POINTER(ctypes.c_int)]
+        split.restype = ctypes.POINTER(wintypes.LPWSTR)
+        free = kernel32.LocalFree
+        free.argtypes = [ctypes.c_void_p]
+        free.restype = ctypes.c_void_p
+        count = ctypes.c_int()
+        result = split("bug2eval " + command.strip(), ctypes.byref(count))
+        if not result:
+            raise ValueError("could not parse Windows command line")
+        try:
+            argv = [result[i] for i in range(1, count.value)]
+        finally:
+            free(result)
+    else:
+        argv = shlex.split(command)
     if not argv:
         raise ValueError("command cannot be empty")
     return argv

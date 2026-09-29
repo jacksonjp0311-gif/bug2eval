@@ -138,7 +138,7 @@ def cmd_inspect(args) -> int:
 
 def cmd_pack(args) -> int:
     case_dir = Path(args.case).resolve()
-    out = pack_case(case_dir, Path(args.output) if args.output else case_dir.with_suffix(".b2e"))
+    out = pack_case(case_dir, Path(args.output) if args.output else case_dir.with_name(case_dir.name + ".b2e"))
     print(out)
     return EXIT_OK
 
