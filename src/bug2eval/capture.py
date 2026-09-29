@@ -111,6 +111,7 @@ def capture_directories(
     verify_argv: list[str], timeout_sec: int = 120, prompt_file: Path | None = None,
     prompt_text: str | None = None, tags: list[str] | None = None,
     max_bytes: int = MAX_CAPTURE_BYTES_DEFAULT, force: bool = False,
+    protected_paths: list[str] | None = None,
 ) -> Path:
     case_id = slug_case_id(case_id)
     _check_capture_inputs(title, verify_argv, timeout_sec, max_bytes)
@@ -148,6 +149,8 @@ def capture_directories(
                 "prompt": _artifact(prompt, case_dir),
             },
         }
+        if protected_paths is not None:
+            data['verification']['protected_paths'] = protected_paths
         save_case(case_dir, data)
         _write_case_readme(case_dir, data)
     return output.resolve()
@@ -178,7 +181,7 @@ def capture_git(
     title: str, verify_argv: list[str], timeout_sec: int = 120,
     prompt_file: Path | None = None, prompt_text: str | None = None,
     tags: list[str] | None = None, max_bytes: int = MAX_CAPTURE_BYTES_DEFAULT,
-    force: bool = False,
+    force: bool = False, protected_paths: list[str] | None = None,
 ) -> Path:
     repo = repo.resolve()
     _check_capture_inputs(title, verify_argv, timeout_sec, max_bytes)
@@ -228,6 +231,8 @@ def capture_git(
                 "prompt": _artifact(prompt, case_dir),
             },
         }
+        if protected_paths is not None:
+            data['verification']['protected_paths'] = protected_paths
         save_case(case_dir, data)
         _write_case_readme(case_dir, data)
     return output.resolve()

@@ -7,6 +7,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from .errors import CaseValidationError
+from .models import artifact_path
+from .util import read_json
 
 
 def _is_within(base: Path, candidate: Path) -> bool:
@@ -78,12 +80,36 @@ def pack_case(case_dir: Path, output: Path) -> Path:
     case_dir = case_dir.resolve()
     if not (case_dir / "metadata.json").is_file():
         raise CaseValidationError(f"not a Bug2Eval case: {case_dir}")
+    if output.is_symlink():
+        raise ValueError('pack output must not be a symlink')
     output = output.resolve()
+    if output.suffix.lower() != '.b2e':
+        raise ValueError('pack output must use the .b2e extension; case input files cannot be overwritten')
+    metadata = read_json(case_dir / 'metadata.json')
+    if not isinstance(metadata, dict) or not isinstance(metadata.get('artifacts', {}), dict):
+        raise CaseValidationError('invalid case metadata for packing')
+    protected = {case_dir / 'metadata.json', case_dir / 'prompt.md', case_dir / 'README.md'}
+    for item in metadata.get('artifacts', {}).values():
+        if not isinstance(item, dict):
+            raise CaseValidationError('invalid artifact metadata for packing')
+        protected.add(artifact_path(case_dir, item.get('path')).resolve())
+    if output in protected or _is_within(case_dir / 'artifacts', output):
+        raise ValueError('pack output must not overwrite case metadata or artifacts')
+    files = []
+    for path in sorted(case_dir.rglob('*')):
+        if path.is_symlink():
+            raise CaseValidationError(f'cannot pack a symlink: {path.relative_to(case_dir)}')
+        if path.is_file() and path.resolve() != output:
+            files.append(path)
     output.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
-        for path in sorted(case_dir.rglob("*")):
-            if path.is_file() and path.resolve() != output:
+    # Select the input files before staging, including when output is inside
+    # the case. Replacing the completed archive preserves an old output on error.
+    with TemporaryDirectory(prefix='.bug2eval-pack-', dir=output.parent) as tmp:
+        staged = Path(tmp) / 'case.b2e'
+        with zipfile.ZipFile(staged, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+            for path in files:
                 zf.write(path, path.relative_to(case_dir))
+        staged.replace(output)
     return output
 
 

@@ -101,6 +101,12 @@ def load_case(case_dir: Path) -> EvalCase:
     timeout = verification.get('timeout_sec')
     if type(timeout) is not int or timeout < 1:
         raise CaseValidationError("verification.timeout_sec must be a positive integer")
+    if 'protected_paths' in verification:
+        paths = verification['protected_paths']
+        if not isinstance(paths, list) or not paths:
+            raise CaseValidationError('verification.protected_paths must be a nonempty array of relative paths')
+        for rel in paths:
+            artifact_path(case_dir, rel)
     expected = data['expected']
     if (not isinstance(expected, dict) or expected.get('before') != 'fail'
             or expected.get('after') != 'pass' or type(expected.get('verify_exit_code')) is not int

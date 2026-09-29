@@ -9,6 +9,7 @@ from .archive import safe_extract_tar
 from .errors import CaseValidationError
 from .integrity import verify_integrity
 from .models import EvalCase
+from .protection import changed_paths, fingerprint, protected_paths
 from .util import render_argv, run_command, utc_now, write_json
 
 
@@ -30,14 +31,20 @@ def _verification(case: EvalCase, workspace: Path):
 
 def validate_case(case: EvalCase) -> dict:
     verify_integrity(case)
-    with tempfile.TemporaryDirectory(prefix="bug2eval-before-") as tmp:
-        before_ws = _workspace(case, "before", Path(tmp))
+    with tempfile.TemporaryDirectory(prefix="bug2eval-validation-") as tmp:
+        before_ws = _workspace(case, "before", Path(tmp) / 'before')
+        after_ws = _workspace(case, "after", Path(tmp) / 'after')
+        protected = protected_paths(case, before_ws, after_ws)
+        before_files = fingerprint(before_ws, protected)
+        after_files = fingerprint(after_ws, protected)
         before = _verification(case, before_ws)
-    with tempfile.TemporaryDirectory(prefix="bug2eval-after-") as tmp:
-        after_ws = _workspace(case, "after", Path(tmp))
         after = _verification(case, after_ws)
-    valid = before.exit_code != 0 and after.exit_code == 0
+        modified = changed_paths(before_ws, protected, before_files) + changed_paths(after_ws, protected, after_files)
+    same_verifier = before_files == after_files and not modified
+    valid = before.exit_code != 0 and after.exit_code == 0 and same_verifier
     reasons: list[str] = []
+    if not same_verifier:
+        reasons.append('protected verifier files differ between snapshots or were modified during verification')
     if before.exit_code == 0:
         reasons.append("before snapshot already passes; eval does not discriminate the regression")
     if after.exit_code != 0:
@@ -48,10 +55,11 @@ def validate_case(case: EvalCase) -> dict:
         "before": before.to_dict(),
         "after": after.to_dict(),
         "reasons": reasons,
+        "verifier_integrity": {"protected_paths": protected, "intact": bool(same_verifier)},
     }
 
 
-def _make_task(case: EvalCase, workspace: Path) -> Path:
+def _make_task(case: EvalCase, workspace: Path, protected: list[str]) -> Path:
     prompt = case.prompt_file.read_text(encoding="utf-8").rstrip()
     verify = render_argv(case.verify_argv)
     task = workspace / "BUG2EVAL_TASK.md"
@@ -66,6 +74,7 @@ def _make_task(case: EvalCase, workspace: Path) -> Path:
 
 - Work only inside this workspace.
 - Do not weaken, skip, delete, or bypass the verification.
+- Protected verifier paths (must remain unchanged): {', '.join(protected)}.
 - Make the smallest correct fix that addresses the underlying bug.
 - Verification command: `{verify}`
 - A successful run exits with code 0.
@@ -97,10 +106,14 @@ def run_case(
     with tempfile.TemporaryDirectory(prefix=f"bug2eval-{case.case_id}-") as temp_name:
         temp_root = Path(temp_name)
         workspace = _workspace(case, "before", temp_root)
-        task_file = _make_task(case, workspace)
+        protected = validation['verifier_integrity']['protected_paths']
+        task_file = _make_task(case, workspace, protected)
+        verifier_files = fingerprint(workspace, protected)
         before = _verification(case, workspace)
         if before.exit_code == 0:
             raise CaseValidationError("before snapshot already passes; cannot score an agent on a non-discriminating case")
+        if changed_paths(workspace, protected, verifier_files):
+            raise CaseValidationError('baseline verification modified protected verifier files')
         agent = None
         if agent_argv:
             expanded = _expand_agent_argv(agent_argv, workspace, task_file, case.prompt_file)
@@ -116,17 +129,25 @@ def run_case(
                     "BUG2EVAL_VERIFY_COMMAND": render_argv(case.verify_argv),
                 },
             )
-        after = _verification(case, workspace)
+        tampered = changed_paths(workspace, protected, verifier_files)
+        if tampered:
+            after_result = {'argv': case.verify_argv, 'exit_code': None, 'stdout': '',
+                            'stderr': 'protected verifier files changed; verification skipped',
+                            'duration_seconds': 0, 'timed_out': False, 'skipped': True}
+        else:
+            after_result = _verification(case, workspace).to_dict()
+            tampered = changed_paths(workspace, protected, verifier_files)
         result = {
             "schema_version": "1.0",
             "case_id": case.case_id,
             "title": case.title,
             "started_from_captured_failure": before.exit_code != 0,
-            "passed": after.exit_code == 0,
+            "passed": not tampered and after_result['exit_code'] == 0,
             "created_at": utc_now(),
             "before_verify": before.to_dict(),
             "agent": agent.to_dict() if agent else None,
-            "after_verify": after.to_dict(),
+            "after_verify": after_result,
+            "verifier_integrity": {"protected_paths": protected, "intact": not tampered, "changed_paths": tampered},
         }
         if keep_workspace:
             keep_workspace = keep_workspace.resolve()

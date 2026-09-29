@@ -1,19 +1,24 @@
-# Bug2Eval 0.1.2 verification
+# Bug2Eval 0.1.3 verification
 
 Local review: 2026-09-29, Windows, Python 3.12.14.
 
-- 37 tests pass, including metadata/path rejection, invalid-case scoring, source
-  protection, staged capture/unpack, receipt collisions, and timeout diagnostics.
-- All three original public cases validate: before exit 1, after exit 0.
-- Original benchmark archives and immutable verifier files are unchanged.
-- Source compilation and whitespace checks pass.
-- Wheel/source builds pass strict Twine validation; the wheel is checked in a clean
-  environment with no dependencies and replays every supported benchmark case.
+- 64 tests pass; one symlink-creation test is skipped because this Windows account
+  lacks permission to create symlinks. POSIX CI covers that test.
+- Reproduced verifier replacement with `pass`, deletion, directory replacement,
+  and additions to a protected helper directory. Each now fails the run.
+- Tampered verifier code is skipped rather than executed. Legitimate application
+  fixes still pass, and command-line JSON receipts report protection failures.
+- Differing before/after verifier contents are rejected. Missing declarations and
+  unknown verifier commands fail closed; capture supports repeatable `--protect`.
+- Packing cannot overwrite case metadata or declared artifacts, including artifacts
+  with a `.b2e` extension. Simulated write/replace failures preserve the old bundle.
+- Repeated internal packing excludes itself and staging files.
+- All three immutable benchmark cases validate unchanged.
 
-The CI matrix covers Windows, macOS, and Linux on Python 3.10 and 3.13. Packaging
-is a separate job, and the `CI passed` job requires every test and package job to
-succeed. See the current-main badge in the README for live status.
+Release checks build the wheel/source distribution, validate metadata with strict
+Twine checks, install the wheel without dependencies in a clean environment, and
+replay the original public cases. The CI matrix covers Python 3.10/3.13 across
+Windows, Linux, and macOS, plus package installation and the aggregate CI check.
 
-Historical failures on the 0.1.0 commit remain visible; those were corrected in
-0.1.1. The three-case corpus is a seed collection of related project bugs, not a
-representative leaderboard. No agent scores are claimed.
+Verifier protection is file-integrity checking, not an OS sandbox or a guarantee
+against all adversarial runtime manipulation. See SECURITY.md for that boundary.

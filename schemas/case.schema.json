@@ -71,6 +71,15 @@
         "timeout_sec": {
           "type": "integer",
           "minimum": 1
+        },
+        "protected_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Additional workspace-relative verifier files/directories, identical in both snapshots and immutable during a run. Paths extend inferred protection."
         }
       }
     },

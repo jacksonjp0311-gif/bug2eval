@@ -29,6 +29,21 @@ Malformed metadata and invalid case contracts return CLI exit code `2`. With
 `--json`, errors are emitted as `{"error": "message", "exit_code": 2}`. Input and
 system errors return `3`.
 
+## Verifier protection
+
+`verification.protected_paths` is an optional nonempty array of workspace-relative
+file or directory paths. Capture it with repeatable `--protect PATH` options.
+Declarations extend the paths inferred from direct command files and pytest test
+assets. Validation fails closed if no paths can be identified. Protected paths
+must exist, remain inside the workspace, contain no symlinks, and have identical
+content in both reference snapshots. Python/test cache directories are ignored.
+
+Run receipts add `verifier_integrity` containing `intact`, `protected_paths`, and
+`changed_paths`. If tampering is detected before scoring, `after_verify.skipped`
+is `true`, its `exit_code` is `null`, and the run is a failure (CLI exit `1`).
+If scoring itself modifies protected files, the run also fails regardless of its
+exit code. These guards detect file changes; they do not sandbox evaluated code.
+
 ## Compatibility promise
 
 Readers should reject unknown major schema versions rather than guessing. Additive fields may appear within the same major version and should be ignored by readers that do not understand them.

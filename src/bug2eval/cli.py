@@ -53,6 +53,7 @@ def cmd_capture(args) -> int:
         output=output, case_id=args.case_id, title=args.title, verify_argv=verify,
         timeout_sec=args.timeout, prompt_file=Path(args.prompt_file) if args.prompt_file else None,
         prompt_text=args.prompt_text, tags=_tags(args.tags), max_bytes=max_bytes, force=args.force,
+        protected_paths=args.protect,
     )
     if args.before_dir or args.after_dir:
         if not (args.before_dir and args.after_dir):
@@ -113,7 +114,12 @@ def cmd_run(args) -> int:
         print(f"{result['case_id']}: {'PASS' if result['passed'] else 'FAIL'}")
         if result["agent"]:
             print(f"  agent exit:  {result['agent']['exit_code']}")
-        print(f"  verify exit: {result['after_verify']['exit_code']}")
+        if result['after_verify'].get('skipped'):
+            print("  verification skipped: protected verifier files changed")
+        else:
+            print(f"  verify exit: {result['after_verify']['exit_code']}")
+        if not result['verifier_integrity']['intact']:
+            print("  changed protected paths: " + ', '.join(result['verifier_integrity']['changed_paths']))
         if result.get("result_file"):
             print(f"  result: {result['result_file']}")
     return EXIT_OK if result["passed"] else EXIT_EVAL_FAILED
@@ -167,6 +173,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--id", dest="case_id", required=True, help="stable case id, e.g. BUG-018")
     p.add_argument("--title", required=True)
     p.add_argument("--verify", required=True, help='verification command, e.g. "python -m pytest -q"')
+    p.add_argument("--protect", action="append", metavar="PATH", help="workspace-relative verifier file/folder to protect; repeat for helpers and config")
     p.add_argument("--repo", default=".", help="git repository for ref mode")
     p.add_argument("--before-ref", default="HEAD~1")
     p.add_argument("--after-ref", default="HEAD")

@@ -80,6 +80,30 @@ That discrimination check prevents "evals" that never actually reproduce the bug
 `run` also validates the reference case before invoking an agent. An already passing
 starting snapshot or a failing reference fix is rejected with exit code `2`.
 
+## Protect the verifier
+
+Bug2Eval fingerprints the verifier before the agent runs. If a protected file is
+changed, deleted, replaced by a symlink, or a protected folder gains files, the run
+fails. A modified verifier is not executed. The protected files must also be
+identical in the captured before and after snapshots.
+
+Direct script paths in `--verify` are detected automatically. For pytest, common
+test folders and configuration are included. Declare additional helpers, fixtures,
+or custom configuration with repeatable `--protect` options:
+
+```bash
+bug2eval capture --id API-204 --title "Handle empty headers" --before-ref HEAD~1 --after-ref HEAD --verify "python verify.py" --protect verify.py --protect test_support
+```
+
+Paths are relative to the captured workspace and must exist in both snapshots.
+When no verifier files can be identified, validation fails and asks for `--protect`.
+Run receipts include `verifier_integrity` with the protected and changed paths.
+The generated agent task lists the protected paths too.
+
+This is file tamper detection, not an adversarial execution sandbox. Declare every
+verifier dependency; inferred paths cannot identify arbitrary imports or external
+tools. Use an isolated evaluator for untrusted agents and third-party cases.
+
 ## Run the eval against any agent
 
 Bug2Eval deliberately does **not** depend on an agent SDK. Give it any local command.
@@ -112,6 +136,9 @@ bug2eval inspect BUG-018.b2e --json
 ```
 
 A `.b2e` is just a portable ZIP container with a stable machine-readable contract.
+Packing requires a `.b2e` output path and rejects destinations that overwrite case
+metadata or artifacts. It writes a temporary archive before replacing an existing
+bundle, so a failed pack leaves the previous bundle intact.
 
 ## Capture from Git or arbitrary directories
 

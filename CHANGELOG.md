@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.3 — 2026-09-29
+
+- Fingerprint verifier files before agent execution; fail runs that modify, delete, or replace protected paths. Skip tampered verifiers.
+- Require identical protected verifier content in both reference snapshots.
+- Infer direct scripts and pytest assets; add repeatable `capture --protect PATH` for helpers and custom verification.
+- Reject packing onto case metadata or artifacts, require a `.b2e` output, and replace bundles only after a successful temporary write.
+- Document that verifier file integrity is not an adversarial process sandbox.
+
 ## 0.1.2 — 2026-09-29
 
 - Validate case metadata, artifact paths, checksums, byte sizes, and verifier arguments before execution.
