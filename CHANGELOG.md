@@ -1,3 +1,8 @@
+# 0.1.1
+
+- Fix extraction on Python 3.10 builds without tarfile filters. Reject links and special files in the compatibility path; preserve traversal checks.
+- Add five compatibility and archive safety regression checks.
+
 # Changelog
 
 ## 0.1.0 — 2026-09-29

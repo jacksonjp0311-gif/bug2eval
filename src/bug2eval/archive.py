@@ -27,7 +27,17 @@ def safe_extract_tar(archive: Path, destination: Path) -> None:
                 raise CaseValidationError(f"unsafe path in archive: {member.name}")
             if member.isdev() or member.isfifo():
                 raise CaseValidationError(f"unsupported special file in archive: {member.name}")
-        tf.extractall(destination, filter="data")
+        if hasattr(tarfile, "data_filter"):
+            tf.extractall(destination, filter="data")
+        else:
+            # Python 3.10 binary releases predate extraction filters. Keep the
+            # traversal checks above and reject links/special types entirely;
+            # never fall back to unfiltered extraction of arbitrary members.
+            for member in tf.getmembers():
+                if not (member.isfile() or member.isdir()):
+                    raise CaseValidationError(f"unsupported file in legacy archive extraction: {member.name}")
+                member.mode &= 0o777
+            tf.extractall(destination)
 
 
 def create_directory_tar(source: Path, output: Path, max_bytes: int) -> None:

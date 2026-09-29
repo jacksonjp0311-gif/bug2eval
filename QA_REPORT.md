@@ -1,8 +1,8 @@
-# Bug2Eval 0.1.0 release verification
+# Bug2Eval 0.1.1 release verification
 
 Verified 2026-09-29 on Windows with the bundled Python runtime.
 
-- Existing tests plus three real regressions: **7 passed**.
+- Existing tests plus three real regressions: **12 passed**.
 - All three regressions were observed failing before application changes.
 - Public cases B2E-001, B2E-002, B2E-003: before exit 1 / after exit 0.
 - Packed case replay and artifact integrity: all three pass.

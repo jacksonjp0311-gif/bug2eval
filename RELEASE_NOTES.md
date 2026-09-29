@@ -1,4 +1,4 @@
-# Bug2Eval v0.1.0
+# Bug2Eval v0.1.1
 
 **Turn real bugs into reusable agent evals.**
 
