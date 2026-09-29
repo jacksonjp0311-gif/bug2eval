@@ -3,3 +3,4 @@ recursive-include assets *
 recursive-include docs *
 recursive-include schemas *
 recursive-include skills *
+recursive-include benchmarks/verifiers *.py

@@ -1,0 +1,54 @@
+{
+  "artifacts": {
+    "after": {
+      "bytes": 2967533,
+      "path": "artifacts/workspace_after.tar.gz",
+      "sha256": "379e3305e270de72fe15aa68d44fd3e73ee4e7f27949e8818379e974e83adeee"
+    },
+    "before": {
+      "bytes": 2967117,
+      "path": "artifacts/workspace_before.tar.gz",
+      "sha256": "1187db4ab9b2d5fa23deca42352a4cebe665192ed47e9650debaf067a54fa022"
+    },
+    "prompt": {
+      "bytes": 220,
+      "path": "prompt.md",
+      "sha256": "7f3336400372e0022e206f72863c6569322ff13dda2b94882a3006196618fe58"
+    }
+  },
+  "case_id": "B2E-001",
+  "created_at": "2026-09-29T19:44:11Z",
+  "expected": {
+    "after": "pass",
+    "before": "fail",
+    "verify_exit_code": 0
+  },
+  "schema_version": "1.0",
+  "source": {
+    "after_commit": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32",
+    "after_ref": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32",
+    "before_commit": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+    "before_ref": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+    "changed_files": [
+      "src/bug2eval/archive.py",
+      "src/bug2eval/cli.py",
+      "src/bug2eval/util.py"
+    ],
+    "kind": "git",
+    "remote": "https://github.com/jacksonjp0311-gif/bug2eval.git",
+    "repository": "https://github.com/jacksonjp0311-gif/bug2eval"
+  },
+  "tags": [
+    "real-bug",
+    "bug2eval",
+    "cross-platform"
+  ],
+  "title": "Packing a case includes its own output archive",
+  "verification": {
+    "argv": [
+      "python",
+      "benchmarks/verifiers/B2E-001.py"
+    ],
+    "timeout_sec": 120
+  }
+}

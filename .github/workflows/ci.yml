@@ -21,3 +21,4 @@ jobs:
       - run: pip install -e .[dev]
       - run: pytest
       - run: python -m bug2eval --help
+      - run: python benchmarks/validate_collection.py

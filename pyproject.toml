@@ -25,6 +25,11 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/jacksonjp0311-gif/bug2eval"
+Issues = "https://github.com/jacksonjp0311-gif/bug2eval/issues"
+Benchmark = "https://github.com/jacksonjp0311-gif/bug2eval/tree/main/benchmarks"
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 

@@ -1,36 +1,21 @@
-# Bug2Eval v0.1.0 — QA Receipt
+# Bug2Eval 0.1.0 release verification
 
-Date: 2026-09-29
+Verified 2026-09-29 on Windows with the bundled Python runtime.
 
-## Verified in this build environment
+- Existing tests plus three real regressions: **7 passed**.
+- All three regressions were observed failing before application changes.
+- Public cases B2E-001, B2E-002, B2E-003: before exit 1 / after exit 0.
+- Packed case replay and artifact integrity: all three pass.
+- Fresh virtual environment, wheel installed without dependencies: CLI version
+  and all three public cases pass from outside the source directory.
+- Wheel and source distribution build; `twine check` passes for both.
+- Source compilation and `git diff --check` pass.
+- Demo records four successful CLI commands; GIF and MP4 are edited replays
+  of those outputs, not a model solve or a timing benchmark.
 
-- Python source compiles with `compileall`.
-- Test suite: **4/4 passed**.
-- Directory-pair capture: PASS.
-- Git-ref capture: PASS.
-- Before-fails / after-passes discrimination: PASS.
-- SHA-256 tamper rejection: PASS.
-- `.b2e` pack and safe unpack/read: PASS.
-- `.b2e` validation: PASS.
-- Generic command-based simulated agent repair: PASS.
-- Result receipt persistence for packed `.b2e` runs: PASS.
-- Wheel build: PASS.
-- Fresh virtual-environment wheel install: PASS.
-- Installed CLI `bug2eval --version`: PASS (`0.1.0`).
+GitHub Actions runs tests and supported public cases on Windows, Linux, and macOS
+with Python 3.10 and 3.13. Consult the live Actions results for remote matrix status.
+The Windows quoting case is skipped on unsupported platforms by the collection runner.
 
-## Local environment used
-
-- Linux
-- Python 3.13.5
-- Git 2.47.3
-
-The repository also includes a GitHub Actions matrix for Python 3.10 and 3.13 across Ubuntu, macOS, and Windows. That matrix is configuration included in the release; only the local environment above was executed during this packaging session.
-
-## Product invariant verified
-
-```text
-verify(before) != 0
-verify(after)  == 0
-```
-
-The example eval `examples/EXAMPLE-001.b2e` satisfies this invariant and can be used as a smoke test.
+This three-case collection consists of related project bugs. It does not establish
+an agent performance baseline or justify general model quality claims.

@@ -1,0 +1,61 @@
+[
+  {
+    "argv": [
+      "python",
+      "-m",
+      "bug2eval",
+      "capture",
+      "--id",
+      "B2E-001",
+      "--title",
+      "Archive packs itself",
+      "--before-ref",
+      "1652799",
+      "--after-ref",
+      "ddec8ed",
+      "--verify",
+      "python benchmarks/verifiers/B2E-001.py",
+      "--output",
+      "$DEMO\\B2E-001"
+    ],
+    "stdout": "Captured B2E-001 -> $DEMO\\B2E-001\nValidation: VALID\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "python",
+      "-m",
+      "bug2eval",
+      "validate",
+      "$DEMO\\B2E-001"
+    ],
+    "stdout": "B2E-001: VALID\n  before: exit 1 (expected non-zero)\n  after:  exit 0 (expected 0)\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "python",
+      "-m",
+      "bug2eval",
+      "pack",
+      "$DEMO\\B2E-001"
+    ],
+    "stdout": "$DEMO\\B2E-001.b2e\n",
+    "stderr": "",
+    "exit_code": 0
+  },
+  {
+    "argv": [
+      "python",
+      "-m",
+      "bug2eval",
+      "validate",
+      "$DEMO\\B2E-001.b2e"
+    ],
+    "stdout": "B2E-001: VALID\n  before: exit 1 (expected non-zero)\n  after:  exit 0 (expected 0)\n",
+    "stderr": "",
+    "exit_code": 0
+  }
+]

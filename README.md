@@ -33,6 +33,13 @@ Bug2Eval turns that one-time debugging event into an asset you can use repeatedl
 
 ## 30-second start
 
+Install from the published repository (PyPI publication is pending):
+
+```bash
+git clone https://github.com/jacksonjp0311-gif/bug2eval.git
+cd bug2eval
+```
+
 ```bash
 pip install -e .
 bug2eval init
@@ -218,6 +225,24 @@ pip install -e .[dev]
 pytest
 python -m bug2eval --help
 ```
+
+## Real bugs, captured
+
+![Recorded Bug2Eval CLI demo](assets/bug2eval-demo.gif)
+
+The [public benchmark collection](benchmarks/README.md) starts with **three real
+Bug2Eval defects** found during release review. Every case was replayed on Windows
+with the same verifier: before fails, after passes. Two cases are cross-platform;
+one specifically tests Windows quoting. These are project bugs, not synthetic
+mutations or measured agent scores.
+
+```bash
+python -m bug2eval validate benchmarks/B2E-001.b2e
+python benchmarks/validate_collection.py
+```
+
+The demo replays recorded CLI output, with paths abbreviated and pauses edited.
+It shows capture, validation, and packing; it does not claim an agent solved the case.
 
 ## What should come next?
 

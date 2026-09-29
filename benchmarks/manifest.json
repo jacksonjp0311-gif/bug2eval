@@ -1,0 +1,54 @@
+{
+  "version": "0.1.0",
+  "cases": [
+    {
+      "id": "B2E-001",
+      "title": "Packing a case includes its own output archive",
+      "archive": "B2E-001.b2e",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "verified_on": [
+        "windows"
+      ],
+      "source": "https://github.com/jacksonjp0311-gif/bug2eval",
+      "license": "MIT",
+      "before_commit": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+      "after_commit": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32"
+    },
+    {
+      "id": "B2E-002",
+      "title": "Dotted case names collide when packed",
+      "archive": "B2E-002.b2e",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos"
+      ],
+      "verified_on": [
+        "windows"
+      ],
+      "source": "https://github.com/jacksonjp0311-gif/bug2eval",
+      "license": "MIT",
+      "before_commit": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+      "after_commit": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32"
+    },
+    {
+      "id": "B2E-003",
+      "title": "Windows quoted verification commands fail to execute",
+      "archive": "B2E-003.b2e",
+      "platforms": [
+        "windows"
+      ],
+      "verified_on": [
+        "windows"
+      ],
+      "source": "https://github.com/jacksonjp0311-gif/bug2eval",
+      "license": "MIT",
+      "before_commit": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+      "after_commit": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "B2E-003",
+  "valid": true,
+  "before_exit": 1,
+  "after_exit": 0,
+  "platform": "win32",
+  "python": "3.12.14",
+  "same_verifier": true,
+  "failure_kind": "AssertionError",
+  "before_commit": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+  "after_commit": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32"
+}

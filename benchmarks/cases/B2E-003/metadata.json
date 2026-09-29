@@ -1,0 +1,54 @@
+{
+  "artifacts": {
+    "after": {
+      "bytes": 2967533,
+      "path": "artifacts/workspace_after.tar.gz",
+      "sha256": "379e3305e270de72fe15aa68d44fd3e73ee4e7f27949e8818379e974e83adeee"
+    },
+    "before": {
+      "bytes": 2967117,
+      "path": "artifacts/workspace_before.tar.gz",
+      "sha256": "1187db4ab9b2d5fa23deca42352a4cebe665192ed47e9650debaf067a54fa022"
+    },
+    "prompt": {
+      "bytes": 226,
+      "path": "prompt.md",
+      "sha256": "bc46c00a0fa9d184cfec1a9d6ed14669e1250e3ea1aa6115ba4699a70f820e76"
+    }
+  },
+  "case_id": "B2E-003",
+  "created_at": "2026-09-29T19:44:15Z",
+  "expected": {
+    "after": "pass",
+    "before": "fail",
+    "verify_exit_code": 0
+  },
+  "schema_version": "1.0",
+  "source": {
+    "after_commit": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32",
+    "after_ref": "ddec8ed047b7dfd46e1caee42fd036a9435c8d32",
+    "before_commit": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+    "before_ref": "1652799b0d0ec91aad7dfb6dba76b9548e1e8a52",
+    "changed_files": [
+      "src/bug2eval/archive.py",
+      "src/bug2eval/cli.py",
+      "src/bug2eval/util.py"
+    ],
+    "kind": "git",
+    "remote": "https://github.com/jacksonjp0311-gif/bug2eval.git",
+    "repository": "https://github.com/jacksonjp0311-gif/bug2eval"
+  },
+  "tags": [
+    "real-bug",
+    "bug2eval",
+    "windows-only"
+  ],
+  "title": "Windows quoted verification commands fail to execute",
+  "verification": {
+    "argv": [
+      "python",
+      "benchmarks/verifiers/B2E-003.py"
+    ],
+    "timeout_sec": 120
+  }
+}

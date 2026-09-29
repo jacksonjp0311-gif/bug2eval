@@ -11,3 +11,9 @@
 - `.b2e` pack/unpack support.
 - Cross-platform CI workflow.
 - Agent skill and integration documentation.
+# Release review fixes
+
+- Exclude a packed archive from its own input files.
+- Preserve dotted case names in default `.b2e` output paths.
+- Parse Windows command quoting with the native argument parser.
+- Publish three verified real-bug cases and a recorded CLI launch demo.
