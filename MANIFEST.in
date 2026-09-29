@@ -1,0 +1,5 @@
+include README.md LICENSE AGENTS.md
+recursive-include assets *
+recursive-include docs *
+recursive-include schemas *
+recursive-include skills *
