@@ -3,17 +3,20 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import tarfile
+import zipfile
+from uuid import uuid4
 from datetime import datetime, timezone
 from pathlib import Path
 
 from . import __version__
 from .archive import open_case, pack_case, unpack_case
 from .capture import capture_directories, capture_git
-from .errors import Bug2EvalError
+from .errors import Bug2EvalError, CaseValidationError
 from .integrity import verify_integrity
 from .models import load_case
 from .runner import run_case, validate_case
-from .util import MAX_CAPTURE_BYTES_DEFAULT, parse_command, render_argv, write_json
+from .util import MAX_CAPTURE_BYTES_DEFAULT, parse_command, render_argv, slug_case_id, write_json
 
 EXIT_OK = 0
 EXIT_EVAL_FAILED = 1
@@ -43,6 +46,7 @@ def cmd_init(args) -> int:
 
 def cmd_capture(args) -> int:
     verify = parse_command(args.verify)
+    args.case_id = slug_case_id(args.case_id)
     max_bytes = int(args.max_mb * 1024 * 1024)
     output = Path(args.output) if args.output else Path(".bug2eval") / "cases" / args.case_id
     common = dict(
@@ -100,7 +104,7 @@ def cmd_run(args) -> int:
         results_dir = Path.cwd() / ".bug2eval" / "results"
         results_dir.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        result_path = results_dir / f"{result['case_id']}-{stamp}.json"
+        result_path = results_dir / f"{result['case_id']}-{stamp}-{uuid4().hex}.json"
         write_json(result_path, result)
         result["result_file"] = str(result_path.resolve())
     if args.json:
@@ -216,9 +220,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return int(args.func(args))
-    except (Bug2EvalError, ValueError, FileNotFoundError, FileExistsError) as exc:
-        print(f"bug2eval: error: {exc}", file=sys.stderr)
-        return EXIT_TOOL_ERROR
+    except (Bug2EvalError, ValueError, OSError, tarfile.TarError, zipfile.BadZipFile) as exc:
+        code = EXIT_INVALID if isinstance(exc, CaseValidationError) else EXIT_TOOL_ERROR
+        if getattr(args, 'json', False):
+            _print_json({'error': str(exc), 'exit_code': code})
+        else:
+            print(f"bug2eval: error: {exc}", file=sys.stderr)
+        return code
     except KeyboardInterrupt:
         print("bug2eval: interrupted", file=sys.stderr)
         return 130

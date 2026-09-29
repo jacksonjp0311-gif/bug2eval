@@ -1,21 +1,19 @@
-# Bug2Eval 0.1.1 release verification
+# Bug2Eval 0.1.2 verification
 
-Verified 2026-09-29 on Windows with the bundled Python runtime.
+Local review: 2026-09-29, Windows, Python 3.12.14.
 
-- Existing tests plus three real regressions: **12 passed**.
-- All three regressions were observed failing before application changes.
-- Public cases B2E-001, B2E-002, B2E-003: before exit 1 / after exit 0.
-- Packed case replay and artifact integrity: all three pass.
-- Fresh virtual environment, wheel installed without dependencies: CLI version
-  and all three public cases pass from outside the source directory.
-- Wheel and source distribution build; `twine check` passes for both.
-- Source compilation and `git diff --check` pass.
-- Demo records four successful CLI commands; GIF and MP4 are edited replays
-  of those outputs, not a model solve or a timing benchmark.
+- 37 tests pass, including metadata/path rejection, invalid-case scoring, source
+  protection, staged capture/unpack, receipt collisions, and timeout diagnostics.
+- All three original public cases validate: before exit 1, after exit 0.
+- Original benchmark archives and immutable verifier files are unchanged.
+- Source compilation and whitespace checks pass.
+- Wheel/source builds pass strict Twine validation; the wheel is checked in a clean
+  environment with no dependencies and replays every supported benchmark case.
 
-GitHub Actions runs tests and supported public cases on Windows, Linux, and macOS
-with Python 3.10 and 3.13. Consult the live Actions results for remote matrix status.
-The Windows quoting case is skipped on unsupported platforms by the collection runner.
+The CI matrix covers Windows, macOS, and Linux on Python 3.10 and 3.13. Packaging
+is a separate job, and the `CI passed` job requires every test and package job to
+succeed. See the current-main badge in the README for live status.
 
-This three-case collection consists of related project bugs. It does not establish
-an agent performance baseline or justify general model quality claims.
+Historical failures on the 0.1.0 commit remain visible; those were corrected in
+0.1.1. The three-case corpus is a seed collection of related project bugs, not a
+representative leaderboard. No agent scores are claimed.

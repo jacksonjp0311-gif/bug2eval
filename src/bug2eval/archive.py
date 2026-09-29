@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 import tarfile
 import zipfile
 from contextlib import contextmanager
@@ -104,14 +103,33 @@ def open_case(path: Path):
 
 
 def unpack_case(archive: Path, output: Path, force: bool = False) -> Path:
+    if output.is_symlink():
+        raise ValueError("unpack output must not be a symlink")
     archive = archive.resolve()
     output = output.resolve()
-    if output.exists():
-        if not force:
-            raise FileExistsError(f"output already exists: {output}")
-        if output.is_dir():
-            shutil.rmtree(output)
-        else:
-            output.unlink()
-    safe_extract_zip(archive, output)
+    if output == archive or output in archive.parents:
+        raise ValueError("unpack output must not contain the input archive")
+    if output.exists() and not force:
+        raise FileExistsError(f"output already exists: {output}")
+    if output == Path.cwd().resolve() or output in Path.cwd().resolve().parents:
+        raise ValueError("cannot replace the working directory or one of its parents")
+    # Fully check the new case before touching an existing destination.
+    from .models import load_case
+    from .integrity import verify_integrity
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix='.bug2eval-unpack-', dir=output.parent) as tmp:
+        staged = Path(tmp) / 'case'
+        safe_extract_zip(archive, staged)
+        verify_integrity(load_case(staged))
+        backup = Path(tmp) / 'previous'
+        if output.exists():
+            load_case(output)
+            output.rename(backup)
+        try:
+            staged.rename(output)
+        except OSError:
+            if backup.exists():
+                backup.rename(output)
+            raise
     return output

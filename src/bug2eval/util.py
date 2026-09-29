@@ -79,7 +79,7 @@ def parse_command(command: str) -> list[str]:
             free(result)
     else:
         argv = shlex.split(command)
-    if not argv:
+    if not argv or not argv[0].strip() or any('\x00' in arg for arg in argv):
         raise ValueError("command cannot be empty")
     return argv
 
@@ -135,8 +135,8 @@ def run_command(argv: list[str], *, cwd: Path, timeout: int, env: dict[str, str]
         )
         return CommandResult(argv, cp.returncode, cp.stdout, cp.stderr, time.monotonic() - start)
     except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
-        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+        stdout = exc.stdout.decode('utf-8', errors='replace') if isinstance(exc.stdout, bytes) else (exc.stdout or "")
+        stderr = exc.stderr.decode('utf-8', errors='replace') if isinstance(exc.stderr, bytes) else (exc.stderr or "")
         return CommandResult(
             argv,
             124,

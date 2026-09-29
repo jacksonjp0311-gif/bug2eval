@@ -19,7 +19,7 @@ and edited pacing. No model solve or speed claim is implied. The post is a draft
 
 ## Optional PyPI publication
 
-The package is version 0.1.1. No PyPI credentials or trusted publisher are configured
+The package is version 0.1.2. No PyPI credentials or trusted publisher are configured
 in this release environment, so no PyPI upload was attempted.
 
 To publish after configuring PyPI authentication in your environment:
@@ -27,8 +27,8 @@ To publish after configuring PyPI authentication in your environment:
 ```bash
 python -m pip install build twine
 python -m build
-python -m twine check dist/bug2eval-0.1.1*
-python -m twine upload dist/bug2eval-0.1.1*
+python -m twine check dist/bug2eval-0.1.2*
+python -m twine upload dist/bug2eval-0.1.2*
 ```
 
 Never commit tokens. The README uses a GitHub install until the package is actually

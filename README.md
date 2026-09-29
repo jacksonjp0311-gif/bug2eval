@@ -4,6 +4,9 @@
 
 # Bug2Eval
 
+[![CI](https://github.com/jacksonjp0311-gif/bug2eval/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jacksonjp0311-gif/bug2eval/actions/workflows/ci.yml)
+[Latest release](https://github.com/jacksonjp0311-gif/bug2eval/releases/latest) · [Public benchmarks](benchmarks/README.md) · [Case format](docs/FORMAT.md)
+
 > **Every bug you fix should make your agents harder to fool next time.**
 
 **Bug2Eval turns a real, fixed software bug into a portable regression evaluation that you can replay against any coding agent.**
@@ -38,10 +41,21 @@ Install from the published repository (PyPI publication is pending):
 ```bash
 git clone https://github.com/jacksonjp0311-gif/bug2eval.git
 cd bug2eval
+python -m pip install -e .
+python -m bug2eval validate benchmarks/B2E-001.b2e
 ```
 
+Expected result: `B2E-001: VALID`, with before exit `1` and after exit `0`.
+This command works in PowerShell, Bash, and zsh. Python must be available as `python`
+on PATH. You can also install the wheel from the latest GitHub release.
+
+## Capture your own fix
+
+In your project's repository, make the same regression test available in both
+commits. Run it once before and once after the application fix. Install that
+project's test dependencies in your environment; they are not bundled in a case.
+
 ```bash
-pip install -e .
 bug2eval init
 
 # After committing the fix:
@@ -63,6 +77,8 @@ AFTER  snapshot + verify command  -> PASS
 ```
 
 That discrimination check prevents "evals" that never actually reproduce the bug.
+`run` also validates the reference case before invoking an agent. An already passing
+starting snapshot or a failing reference fix is rejected with exit code `2`.
 
 ## Run the eval against any agent
 
@@ -113,6 +129,9 @@ bug2eval capture \
 ### Two directory snapshots
 
 Useful for generated code, vendored fixtures, non-Git projects, and agents working in scratch workspaces:
+
+Place the output outside both source directories. `--force` replaces an existing
+case only; it cannot replace the source workspace or an unrelated folder.
 
 ```bash
 bug2eval capture \
@@ -219,10 +238,10 @@ Bug2Eval never needs API keys and does not transmit code by itself.
 
 ```bash
 python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# macOS/Linux: source .venv/bin/activate
-pip install -e .[dev]
-pytest
+# PowerShell: .\.venv\Scripts\Activate.ps1
+# Bash/zsh: source .venv/bin/activate
+python -m pip install -e ".[dev]"
+python -m pytest
 python -m bug2eval --help
 ```
 

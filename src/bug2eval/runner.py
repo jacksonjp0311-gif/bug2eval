@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .archive import safe_extract_tar
+from .errors import CaseValidationError
 from .integrity import verify_integrity
 from .models import EvalCase
 from .util import render_argv, run_command, utc_now, write_json
@@ -90,12 +91,16 @@ def run_case(
     case: EvalCase, *, agent_argv: list[str] | None, agent_timeout_sec: int = 900,
     keep_workspace: Path | None = None, save_result: bool = True,
 ) -> dict:
-    verify_integrity(case)
+    validation = validate_case(case)
+    if not validation['valid']:
+        raise CaseValidationError('; '.join(validation['reasons']))
     with tempfile.TemporaryDirectory(prefix=f"bug2eval-{case.case_id}-") as temp_name:
         temp_root = Path(temp_name)
         workspace = _workspace(case, "before", temp_root)
         task_file = _make_task(case, workspace)
         before = _verification(case, workspace)
+        if before.exit_code == 0:
+            raise CaseValidationError("before snapshot already passes; cannot score an agent on a non-discriminating case")
         agent = None
         if agent_argv:
             expanded = _expand_agent_argv(agent_argv, workspace, task_file, case.prompt_file)

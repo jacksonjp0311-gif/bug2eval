@@ -1,15 +1,13 @@
-# Bug2Eval v0.1.1
+# Bug2Eval v0.1.2
 
-**Turn real bugs into reusable agent evals.**
+This polish release makes invalid cases fail clearly before an agent runs, prevents
+capture from overwriting its source, preserves existing cases when unpacking fails,
+and keeps repeated run receipts distinct. Artifact paths are confined to the case
+folder, and both sizes and SHA-256 hashes are checked.
 
-Initial release includes Git and directory snapshot capture, deterministic validation, portable `.b2e` files, generic agent invocation, JSON automation output, artifact checksums, safe archive handling, result receipts, a zero-runtime-dependency Python package, an agent skill file, schema documentation, examples, tests, and cross-platform CI configuration.
+The README quick start runs an existing public case immediately. CI now checks all
+six platform/Python combinations plus a built wheel installed in a fresh environment.
+The `CI passed` check summarizes those results; see Actions for current status.
 
-The shortest demo:
-
-```bash
-bug2eval capture --id BUG-001 --title "real bug" --before-ref HEAD~1 --after-ref HEAD --verify "pytest -q"
-bug2eval validate .bug2eval/cases/BUG-001
-bug2eval pack .bug2eval/cases/BUG-001
-```
-
-**The bug became a benchmark.**
+The three original benchmark cases and their verifiers are unchanged. PyPI upload
+remains pending authentication; install from GitHub or the attached wheel.
