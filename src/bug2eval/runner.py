@@ -41,8 +41,10 @@ def validate_case(case: EvalCase) -> dict:
         after = _verification(case, after_ws)
         modified = changed_paths(before_ws, protected, before_files) + changed_paths(after_ws, protected, after_files)
     same_verifier = before_files == after_files and not modified
-    valid = before.exit_code != 0 and after.exit_code == 0 and same_verifier
+    valid = before.exit_code != 0 and after.exit_code == 0 and same_verifier and not before.timed_out and not after.timed_out
     reasons: list[str] = []
+    if before.timed_out or after.timed_out:
+        reasons.append("verification timed out; infrastructure failure is not a reproduced bug")
     if not same_verifier:
         reasons.append('protected verifier files differ between snapshots or were modified during verification')
     if before.exit_code == 0:
@@ -108,15 +110,17 @@ def run_case(
         workspace = _workspace(case, "before", temp_root)
         protected = validation['verifier_integrity']['protected_paths']
         task_file = _make_task(case, workspace, protected)
+        local_prompt = workspace / "BUG2EVAL_PROMPT.md"
+        local_prompt.write_text(case.prompt_file.read_text(encoding="utf-8"), encoding="utf-8")
         verifier_files = fingerprint(workspace, protected)
         before = _verification(case, workspace)
-        if before.exit_code == 0:
+        if before.exit_code == 0 or before.timed_out:
             raise CaseValidationError("before snapshot already passes; cannot score an agent on a non-discriminating case")
         if changed_paths(workspace, protected, verifier_files):
             raise CaseValidationError('baseline verification modified protected verifier files')
         agent = None
         if agent_argv:
-            expanded = _expand_agent_argv(agent_argv, workspace, task_file, case.prompt_file)
+            expanded = _expand_agent_argv(agent_argv, workspace, task_file, local_prompt)
             agent = run_command(
                 expanded,
                 cwd=workspace,
@@ -125,7 +129,7 @@ def run_case(
                     "BUG2EVAL_CASE_ID": case.case_id,
                     "BUG2EVAL_WORKSPACE": str(workspace),
                     "BUG2EVAL_TASK_FILE": str(task_file),
-                    "BUG2EVAL_PROMPT_FILE": str(case.prompt_file),
+                    "BUG2EVAL_PROMPT_FILE": str(local_prompt),
                     "BUG2EVAL_VERIFY_COMMAND": render_argv(case.verify_argv),
                 },
             )
@@ -142,7 +146,7 @@ def run_case(
             "case_id": case.case_id,
             "title": case.title,
             "started_from_captured_failure": before.exit_code != 0,
-            "passed": not tampered and after_result['exit_code'] == 0,
+            "passed": not tampered and after_result['exit_code'] == 0 and not after_result.get("timed_out") and (agent is None or (agent.exit_code == 0 and not agent.timed_out)),
             "created_at": utc_now(),
             "before_verify": before.to_dict(),
             "agent": agent.to_dict() if agent else None,

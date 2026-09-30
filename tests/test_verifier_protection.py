@@ -150,3 +150,27 @@ def test_windows_relative_command_paths_are_inferred(guarded_case):
     from bug2eval.protection import protected_paths
     guarded_case.data['verification']['argv'] = [sys.executable, '.\\verify.py']
     assert protected_paths(guarded_case, guarded_case.root.parent/'before') == ['verify.py']
+
+
+def test_timeout_is_not_valid_bug_evidence(guarded_case, monkeypatch):
+    from bug2eval.util import CommandResult
+    import bug2eval.runner as runner
+    results = iter([CommandResult([], 124, '', '', 1, True), CommandResult([], 0, '', '', 0)])
+    monkeypatch.setattr(runner, '_verification', lambda *args: next(results))
+    result = runner.validate_case(guarded_case)
+    assert not result['valid']
+    assert any('timed out' in reason for reason in result['reasons'])
+
+
+def test_prompt_path_does_not_disclose_reference_directory(guarded_case):
+    code = "import os,sys;from pathlib import Path;p=Path(sys.argv[1]);assert p.parent==Path.cwd();assert Path(os.environ['BUG2EVAL_PROMPT_FILE'])==p;assert not (p.parent/'workspace_after.tar.gz').exists();Path('value.py').write_text('value = 42\\n')"
+    result = run_case(guarded_case, agent_argv=[sys.executable, '-c', code, '{prompt_file}'], save_result=False)
+    assert result['passed']
+    assert str(guarded_case.root) not in str(result['agent']['argv'])
+
+
+def test_agent_nonzero_exit_cannot_be_counted_as_solve(guarded_case):
+    code = "from pathlib import Path;Path('value.py').write_text('value = 42\\n');raise SystemExit(7)"
+    result = run_case(guarded_case, agent_argv=[sys.executable, '-c', code], save_result=False)
+    assert result['after_verify']['exit_code'] == 0
+    assert not result['passed']

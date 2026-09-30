@@ -49,3 +49,11 @@ Do not weaken this invariant to make a case pass.
 - `integrity.py`: SHA-256 verification.
 - `runner.py`: validate and run workflows.
 - `cli.py`: stable command-line interface.
+
+## Integration evidence boundaries
+
+Validation rejects verifier timeouts: a stalled process is not a reproduced assertion failure. Integrators must additionally classify the original failure; a nonzero exit alone cannot distinguish a bug from missing dependencies or a bad command. Keep infrastructure failures and flaky cases in a candidate queue.
+
+During replay, `{prompt_file}` and `BUG2EVAL_PROMPT_FILE` now refer to a copy inside the disposable workspace, not the reference case directory. This reduces accidental reference disclosure; it does not create an OS sandbox. A solver returning nonzero or timing out cannot receive a passing solve even if it left a passing patch. Keep scripted/reference repairs separate from agent solve measurements.
+
+Protect the verifier, supporting helpers, and configuration with repeatable `--protect PATH` arguments. Set up the same pinned dependencies in both snapshots. New tests must be overlaid identically into both snapshots with provenance recorded. Keep scoring and bundles outside the solver's writable scope, isolate untrusted programs, and retain holdout cases before tuning prompts.
