@@ -163,7 +163,7 @@ def test_timeout_is_not_valid_bug_evidence(guarded_case, monkeypatch):
 
 
 def test_prompt_path_does_not_disclose_reference_directory(guarded_case):
-    code = "import os,sys;from pathlib import Path;p=Path(sys.argv[1]);assert p.parent==Path.cwd();assert Path(os.environ['BUG2EVAL_PROMPT_FILE'])==p;assert not (p.parent/'workspace_after.tar.gz').exists();Path('value.py').write_text('value = 42\\n')"
+    code = "import os,sys;from pathlib import Path;p=Path(sys.argv[1]);assert p.parent.resolve()==Path.cwd().resolve();assert Path(os.environ['BUG2EVAL_PROMPT_FILE'])==p;assert not (p.parent/'workspace_after.tar.gz').exists();Path('value.py').write_text('value = 42\\n')"
     result = run_case(guarded_case, agent_argv=[sys.executable, '-c', code, '{prompt_file}'], save_result=False)
     assert result['passed']
     assert str(guarded_case.root) not in str(result['agent']['argv'])
